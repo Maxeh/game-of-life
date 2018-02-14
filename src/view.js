@@ -65,8 +65,8 @@ function View() {
         "<span id='population-counter'>0</span>" +
       "</div>" +
       "<div id='controls2'>" +
-        "<span>Grid size [5-50]<span>" +
-        "<input type=number min='' max='60' value='" + this.fieldSize + "' id='input-fieldSize'>" +
+        "<span>Grid size [2-50]:<span>" +
+        "<input type=number min='2' max='60' value='" + this.fieldSize + "' id='input-fieldSize'>" +
       "</div>" +
 
       "<canvas id='game-field-bg' width='" + this.gameWidth + "' height='" + this.gameHeight + "'></canvas>" +

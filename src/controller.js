@@ -30,7 +30,7 @@ function Controller(view, model) {
 
     let fieldSize = document.getElementById("input-fieldSize");
     fieldSize.onchange = function() {
-      if (fieldSize.value > 4 && fieldSize.value < 100) {
+      if (fieldSize.value > 1 && fieldSize.value < 100) {
         this.view.fieldSize = fieldSize.value;
         this.resetGame();
       }
