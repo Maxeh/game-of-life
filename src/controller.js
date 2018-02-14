@@ -27,6 +27,37 @@ function Controller(view, model) {
     document.getElementsByTagName("button")[1].onclick = () => this.evolve();
     document.getElementsByTagName("button")[2].onclick = () => this.pauseLoop();
     document.getElementsByTagName("button")[3].onclick = () => this.resetGame();
+
+    let fieldSize = document.getElementById("input-fieldSize");
+    fieldSize.onchange = function() {
+      if (fieldSize.value > 4 && fieldSize.value < 100) {
+        this.view.fieldSize = fieldSize.value;
+        this.resetGame();
+      }
+    }.bind(this);
+
+    let pattern = document.getElementById("select-pattern");
+    pattern.onchange = function() {
+      let x = pattern.value.split("/");
+      let n = 0;
+      x.forEach((r) => {
+        if (r.length > n)
+          n = r.length;
+      })
+
+      if (this.view.columns > n && this.view.rows > x.length) {
+        let startX = Math.round((this.view.columns - n) / 2);
+        let startY = Math.round((this.view.rows - x.length) / 2);
+        for (let e = 0; e < x.length; e++) {
+          for (let i = 0; i < x[e].length; i++) {
+            if (x[e].charAt(i) === "1") {
+              this.model.activateBox((startX + i) * this.view.fieldSize, (startY + e) * this.view.fieldSize);
+              this.view.repaint();
+            }
+          }
+        }
+      }
+    }.bind(this);
   }
 
   this.resetGame = function() {

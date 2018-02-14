@@ -7,6 +7,7 @@ window.onload = function() {
   view.setModel(model);
 
   let controller = new Controller(view, model);
+  view.setController(controller);
   controller.addListener();
 }
 
@@ -23,16 +24,21 @@ function View() {
   this.ctx = null;
 
   this.model = null;
+  this.controller = null;
 
   this.setModel = function(model){
     this.model = model;
   }
 
+  this.setController = function(controller){
+    this.controller = controller;
+  }
+
   this.createGame = function() {
-    this.gameWidth = window.innerWidth - (this.fieldSize*5);
+    this.gameWidth = window.innerWidth - 40;
     this.gameWidth -= this.gameWidth % this.fieldSize;
 
-    this.gameHeight = window.innerHeight - (this.fieldSize*5) - 50;
+    this.gameHeight = window.innerHeight - 40 - 80;
     this.gameHeight -= this.gameHeight % this.fieldSize;
 
     this.columns = Math.floor(this.gameWidth / this.fieldSize);
@@ -49,8 +55,7 @@ function View() {
         "<button>Reset</button>" +
         "<select id='select-pattern'>" +
           "<option disabled selected hidden>Choose pattern...</option>" +
-          "<option>eins</option>" +
-          "<option>hihi</option>" +
+          "<option value='00000001/000001011/00000101/000001/0001/0101'>Pattern 1</option>" +
           "<option>zwei</option>" +
           "<option>hihi</option>" +
         "</select>" +
@@ -59,16 +64,22 @@ function View() {
         "<span class='text'>Population: </span>" +
         "<span id='population-counter'>0</span>" +
       "</div>" +
+      "<div id='controls2'>" +
+        "<span>Grid size [5-50]<span>" +
+        "<input type=number min='' max='60' value='" + this.fieldSize + "' id='input-fieldSize'>" +
+      "</div>" +
+
       "<canvas id='game-field-bg' width='" + this.gameWidth + "' height='" + this.gameHeight + "'></canvas>" +
       "<canvas id='game-field' width='" + this.gameWidth + "' height='" + this.gameHeight + "'></canvas>";
 
     document.getElementById("controls").setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px;");
+    document.getElementById("controls2").setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px;");
 
     this.canvas = document.getElementById("game-field");
-    this.canvas.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + this.yMargin + "px;");
+    this.canvas.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + (this.yMargin+45) + "px;");
 
     this.canvasBG = document.getElementById("game-field-bg");
-    this.canvasBG.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + this.yMargin + "px;");
+    this.canvasBG.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + (this.yMargin+45) + "px;");
 
     this.ctx = this.canvas.getContext("2d");
     this.ctxBG = this.canvasBG.getContext("2d");
