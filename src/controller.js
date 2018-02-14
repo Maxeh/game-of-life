@@ -2,36 +2,53 @@ function Controller(view, model) {
   this.view = view;
   this.model = model;
   this.mouseDown = false;
+  this.interval = null;
 
-  this.view.canvas.addEventListener('mousemove',
-    (e) => {
-      if(this.mouseDown) {
-        this.model.activateBox(e.offsetX, e.offsetY);
-        this.view.repaint();
+  this.addListener = function(){
+    this.view.canvas.addEventListener('mousemove',
+      (e) => {
+        if(this.mouseDown) {
+          this.model.activateBox(e.offsetX, e.offsetY);
+          this.view.repaint();
+        }
       }
-    }
-  );
+    );
 
-  this.view.canvas.addEventListener('click', (e) => {
-    this.model.activateBox(e.offsetX, e.offsetY);
-    this.view.repaint();
-  });
+    this.view.canvas.addEventListener('click', (e) => {
+      this.model.activateBox(e.offsetX, e.offsetY);
+      this.view.repaint();
+    });
 
-  this.view.canvas.addEventListener('mousedown', () => this.mouseDown = true);
-  this.view.canvas.addEventListener('mouseup', () => this.mouseDown = false);
-  document.body.addEventListener('mouseup', () => this.mouseDown = false);
+    this.view.canvas.addEventListener('mousedown', () => this.mouseDown = true);
+    this.view.canvas.addEventListener('mouseup', () => this.mouseDown = false);
+    document.body.addEventListener('mouseup', () => this.mouseDown = false);
 
-  document.body.addEventListener('keydown', (e) => {if (e.key === "g") this.startLoop()});
-  document.body.addEventListener('keydown', (e) => {if (e.key === "s") this.endLoop()});
-
-  this.startLoop = function() {
-    this.interval = setInterval(() => {
-      this.evolve();
-    }, 50);
+    document.getElementsByTagName("button")[0].onclick = () => this.startLoop();
+    document.getElementsByTagName("button")[1].onclick = () => this.evolve();
+    document.getElementsByTagName("button")[2].onclick = () => this.pauseLoop();
+    document.getElementsByTagName("button")[3].onclick = () => this.resetGame();
   }
 
-  this.endLoop = function() {
-    clearInterval(this.interval);
+  this.resetGame = function() {
+    this.pauseLoop();
+    this.view.createGame();
+    this.model.resetModel();
+    this.addListener();
+  }
+
+  this.startLoop = function() {
+    if (!this.interval) {
+      this.interval = setInterval(() => {
+        this.evolve();
+      }, 50);
+    }
+  }
+
+  this.pauseLoop = function() {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
   }
 
   this.evolve = function() {
@@ -107,6 +124,7 @@ function Controller(view, model) {
       }
     }
 
+    this.model.generation++;
     this.view.repaint();
   }
 }

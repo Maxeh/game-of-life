@@ -1,14 +1,20 @@
 function Model(view) {
   this.view = view;
-  this.gameArray = new Array(this.view.columns);
+  this.gameArray = [];
+  this.generation = 0;
 
-  for (let i = 0; i < this.view.columns; i++) {
-    this.gameArray[i] = new Array(this.view.rows);
-  }
+  this.resetModel = function() {
+    this.generation = 0;
+    this.gameArray = new Array(this.view.columns);
 
-  for (let x = 0; x < this.view.columns; x++) {
-    for (let y = 0; y < this.view.rows; y++) {
-      this.gameArray[x][y] = 0;
+    for (let i = 0; i < this.view.columns; i++) {
+      this.gameArray[i] = new Array(this.view.rows);
+    }
+
+    for (let x = 0; x < this.view.columns; x++) {
+      for (let y = 0; y < this.view.rows; y++) {
+        this.gameArray[x][y] = 0;
+      }
     }
   }
 
