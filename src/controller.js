@@ -27,6 +27,7 @@ function Controller(view, model) {
     document.getElementsByTagName("button")[1].onclick = () => this.evolve();
     document.getElementsByTagName("button")[2].onclick = () => this.pauseLoop();
     document.getElementsByTagName("button")[3].onclick = () => this.resetGame();
+    document.getElementsByTagName("button")[4].onclick = () => this.clearHistory();
 
     let fieldSize = document.getElementById("input-fieldSize");
     fieldSize.onchange = function() {
@@ -38,25 +39,7 @@ function Controller(view, model) {
 
     let pattern = document.getElementById("select-pattern");
     pattern.onchange = function() {
-      let x = pattern.value.split("/");
-      let n = 0;
-      x.forEach((r) => {
-        if (r.length > n)
-          n = r.length;
-      })
-
-      if (this.view.columns > n && this.view.rows > x.length) {
-        let startX = Math.round((this.view.columns - n) / 2);
-        let startY = Math.round((this.view.rows - x.length) / 2);
-        for (let e = 0; e < x.length; e++) {
-          for (let i = 0; i < x[e].length; i++) {
-            if (x[e].charAt(i) === "1") {
-              this.model.activateBox((startX + i) * this.view.fieldSize, (startY + e) * this.view.fieldSize);
-              this.view.repaint();
-            }
-          }
-        }
-      }
+      this.loadPattern(pattern.value.split("/"));
     }.bind(this);
   }
 
@@ -82,7 +65,67 @@ function Controller(view, model) {
     }
   }
 
+  this.clearHistory = function() {
+    localStorage.clear();
+    this.resetGame();
+  }
+
+  this.loadPattern = function(rows) {
+    this.resetGame();
+
+    let n = 0;
+    rows.forEach((r) => {
+      if (r.length > n)
+        n = r.length;
+    })
+
+    if (this.view.columns >= n && this.view.rows >= rows.length) {
+      let startX = Math.round((this.view.columns - n) / 2);
+      let startY = Math.round((this.view.rows - rows.length) / 2);
+      for (let e = 0; e < rows.length; e++) {
+        for (let i = 0; i < rows[e].length; i++) {
+          if (rows[e].charAt(i) === "1") {
+            this.model.activateBox((startX + i) * this.view.fieldSize, (startY + e) * this.view.fieldSize);
+          }
+        }
+      }
+      this.view.repaint();
+    }
+  }
+
+  this.saveInputPattern = function() {
+    let input = [];
+
+    for (let x = 0; x < this.view.columns; x++) {
+      for (let y = 0; y < this.view.rows; y++) {
+        let add;
+        this.model.gameArray[x][y] === 1 ? add = "1" : add = "0";
+        if (input[y]) {
+          input[y] += add;
+        } else {
+          input[y] = add;
+        }
+      }
+    }
+
+    input = input.join("/");
+    let nr = localStorage.getItem("saveCtr");
+    if (!nr) {
+      localStorage.setItem("saveCtr", 1);
+      localStorage.setItem("save1", input);
+      localStorage.setItem("save1-date", Date.now());
+    } else {
+      localStorage.setItem("saveCtr", parseInt(nr) + 1);
+      localStorage.setItem("save" + (parseInt(nr) + 1), input);
+      localStorage.setItem("save" + (parseInt(nr) + 1) + "-date", Date.now());
+    }
+  }
+
   this.evolve = function() {
+    if (this.model.generation === 0) {
+      this.saveInputPattern();
+    }
+
     let gameArrayClone = new Array(this.view.columns);
     for (let i = 0; i < this.view.columns; i++) {
       gameArrayClone[i] = new Array(this.view.rows);

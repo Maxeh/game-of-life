@@ -7,7 +7,6 @@ window.onload = function() {
   view.setModel(model);
 
   let controller = new Controller(view, model);
-  view.setController(controller);
   controller.addListener();
 }
 
@@ -24,14 +23,9 @@ function View() {
   this.ctx = null;
 
   this.model = null;
-  this.controller = null;
 
   this.setModel = function(model){
     this.model = model;
-  }
-
-  this.setController = function(controller){
-    this.controller = controller;
   }
 
   this.createGame = function() {
@@ -53,24 +47,54 @@ function View() {
         "<button>Next</button>" +
         "<button>Pause</button>" +
         "<button>Reset</button>" +
+        "<button>Reset &amp clear history</button>" +
         "<select id='select-pattern'>" +
           "<option disabled selected hidden>Choose pattern...</option>" +
           "<option value='00000001/000001011/00000101/000001/0001/0101'>Pattern 1</option>" +
           "<option>zwei</option>" +
           "<option>hihi</option>" +
         "</select>" +
+      "</div>" +
+      "<div id='controls2'>" +
+        "<span>Grid size [2-50]:<span>" +
+        "<input type=number min='2' max='60' value='" + this.fieldSize + "' id='input-fieldSize'>" +
         "<span class='text'>Generation: </span>" +
         "<span id='generation-counter'>0</span>" +
         "<span class='text'>Population: </span>" +
         "<span id='population-counter'>0</span>" +
       "</div>" +
-      "<div id='controls2'>" +
-        "<span>Grid size [2-50]:<span>" +
-        "<input type=number min='2' max='60' value='" + this.fieldSize + "' id='input-fieldSize'>" +
-      "</div>" +
 
       "<canvas id='game-field-bg' width='" + this.gameWidth + "' height='" + this.gameHeight + "'></canvas>" +
       "<canvas id='game-field' width='" + this.gameWidth + "' height='" + this.gameHeight + "'></canvas>";
+
+    let saveCtr = localStorage.getItem("saveCtr");
+    if (saveCtr) {
+      for (let i = 1; i <= parseInt(saveCtr); i++) {
+        if (i === 1) {
+          let opt = document.createElement("option");
+          opt.value = "0";
+          opt.innerHTML = "&#9660;&#9660; history &#9660;&#9660;";
+          document.getElementById("select-pattern").appendChild(opt);
+        }
+        let val = localStorage.getItem("save" + i);
+        let opt = document.createElement("option");
+        opt.value = val;
+        let date = new Date(parseInt(localStorage.getItem("save" + i + "-date")));
+        let dd = date.getDate();
+        let mm = date.getMonth()+1;
+        let yyyy = date.getFullYear();
+        let hh = date.getHours();
+        let mi = date.getMinutes();
+        if(dd<10) dd = '0'+dd;
+        if(mm<10) mm = '0'+mm;
+        if(hh<10) hh = '0'+hh;
+        if(mi<10) mi = '0'+mi;
+
+        date = dd + '/' + mm + '/' + yyyy + " - " + hh + ":" + mi;
+        opt.innerHTML = date;
+        document.getElementById("select-pattern").appendChild(opt);
+      }
+    }
 
     document.getElementById("controls").setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px;");
     document.getElementById("controls2").setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px;");
