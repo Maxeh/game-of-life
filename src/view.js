@@ -70,12 +70,6 @@ function View() {
     let saveCtr = localStorage.getItem("saveCtr");
     if (saveCtr) {
       for (let i = 1; i <= parseInt(saveCtr); i++) {
-        if (i === 1) {
-          let opt = document.createElement("option");
-          opt.value = "0";
-          opt.innerHTML = "&#9660;&#9660; history &#9660;&#9660;";
-          document.getElementById("select-pattern").appendChild(opt);
-        }
         let val = localStorage.getItem("save" + i);
         let opt = document.createElement("option");
         opt.value = val;

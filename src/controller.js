@@ -3,18 +3,19 @@ function Controller(view, model) {
   this.model = model;
   this.mouseDown = false;
   this.interval = null;
+  this.patternSelected = false;
 
   this.addListener = function(){
-    this.view.canvas.addEventListener('mousemove',
-      (e) => {
-        if(this.mouseDown) {
-          this.model.activateBox(e.offsetX, e.offsetY);
-          this.view.repaint();
-        }
+    this.view.canvas.addEventListener('mousemove', (e) => {
+      if(this.mouseDown) {
+        this.patternSelected = false;
+        this.model.activateBox(e.offsetX, e.offsetY);
+        this.view.repaint();
       }
-    );
+    });
 
     this.view.canvas.addEventListener('click', (e) => {
+      this.patternSelected = false;
       this.model.activateBox(e.offsetX, e.offsetY);
       this.view.repaint();
     });
@@ -44,6 +45,7 @@ function Controller(view, model) {
   }
 
   this.resetGame = function() {
+    this.patternSelected = false;
     this.pauseLoop();
     this.view.createGame();
     this.model.resetModel();
@@ -72,6 +74,7 @@ function Controller(view, model) {
 
   this.loadPattern = function(rows) {
     this.resetGame();
+    this.patternSelected = true;
 
     let n = 0;
     rows.forEach((r) => {
@@ -108,7 +111,45 @@ function Controller(view, model) {
       }
     }
 
+    // remove leading "0" from input array
+    while (input.every((i) => i.charAt(0) === "0")) {
+      for (let i = 0; i < input.length; i++){
+        input[i] = input[i].substring(1, input[i].length);
+      }
+    }
+
+    // remove trailing "0" from input array
+    let highestLastIndex = 0;
+    for (let i = 0; i < input.length; i++){
+      let lastIndex = input[i].lastIndexOf("1");
+      if (lastIndex > highestLastIndex)
+        highestLastIndex = lastIndex;
+    }
+    for (let i = 0; i < input.length; i++) {
+      input[i] = input[i].substring(0, highestLastIndex + 1);
+    }
+
+    // remove leading empty rows
+    let firstRelevantRow = 0;
+    for (let i = 0; i < input.length; i++){
+      if (input[i].indexOf("1") > -1) {
+        firstRelevantRow = i;
+        break;
+      }
+    }
+
+    // remove trailing empty rows
+    let lastRelevantRow = 0;
+    for (let i = input.length-1; i > 0; i--){
+      if (input[i].indexOf("1") > -1) {
+        lastRelevantRow = i;
+        break;
+      }
+    }
+
+    input = input.slice(firstRelevantRow, lastRelevantRow+1);
     input = input.join("/");
+
     let nr = localStorage.getItem("saveCtr");
     if (!nr) {
       localStorage.setItem("saveCtr", 1);
@@ -122,7 +163,7 @@ function Controller(view, model) {
   }
 
   this.evolve = function() {
-    if (this.model.generation === 0) {
+    if (this.model.generation === 0 && this.patternSelected === false) {
       this.saveInputPattern();
     }
 
