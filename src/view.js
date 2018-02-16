@@ -28,6 +28,21 @@ function View() {
     this.model = model;
   }
 
+  this.getDate = function (time) {
+    let date = new Date(time);
+    let dd = date.getDate();
+    let mm = date.getMonth() + 1;
+    let yyyy = date.getFullYear();
+    let hh = date.getHours();
+    let mi = date.getMinutes();
+    if (dd < 10) dd = '0' + dd;
+    if (mm < 10) mm = '0' + mm;
+    if (hh < 10) hh = '0' + hh;
+    if (mi < 10) mi = '0' + mi;
+
+    return dd + '/' + mm + '/' + yyyy + " - " + hh + ":" + mi;
+  }
+
   this.createGame = function() {
     this.gameWidth = window.innerWidth - 40;
     this.gameWidth -= this.gameWidth % this.fieldSize;
@@ -73,19 +88,7 @@ function View() {
         let val = localStorage.getItem("save" + i);
         let opt = document.createElement("option");
         opt.value = val;
-        let date = new Date(parseInt(localStorage.getItem("save" + i + "-date")));
-        let dd = date.getDate();
-        let mm = date.getMonth()+1;
-        let yyyy = date.getFullYear();
-        let hh = date.getHours();
-        let mi = date.getMinutes();
-        if(dd<10) dd = '0'+dd;
-        if(mm<10) mm = '0'+mm;
-        if(hh<10) hh = '0'+hh;
-        if(mi<10) mi = '0'+mi;
-
-        date = dd + '/' + mm + '/' + yyyy + " - " + hh + ":" + mi;
-        opt.innerHTML = date;
+        opt.innerHTML = this.getDate(parseInt(localStorage.getItem("save" + i + "-date")));
         document.getElementById("select-pattern").appendChild(opt);
       }
     }
@@ -138,6 +141,17 @@ function View() {
   this.updateCounter = function(active) {
     document.getElementById("generation-counter").innerHTML = this.model.generation;
     document.getElementById("population-counter").innerHTML = active;
+  }
+
+  this.addPatternToHistory = function() {
+    let saveCtr = localStorage.getItem("saveCtr");
+    if (saveCtr) {
+      let val = localStorage.getItem("save" + saveCtr);
+      let opt = document.createElement("option");
+      opt.value = val;
+      opt.innerHTML = this.getDate(parseInt(localStorage.getItem("save" + saveCtr + "-date")));
+      document.getElementById("select-pattern").appendChild(opt);
+    }
   }
 }
 

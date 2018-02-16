@@ -160,6 +160,8 @@ function Controller(view, model) {
       localStorage.setItem("save" + (parseInt(nr) + 1), input);
       localStorage.setItem("save" + (parseInt(nr) + 1) + "-date", Date.now());
     }
+
+    this.view.addPatternToHistory();
   }
 
   this.evolve = function() {
