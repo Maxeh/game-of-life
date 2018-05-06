@@ -1,4 +1,4 @@
-window.onload = function() {
+window.onload = function () {
   let view = new View();
   view.createGame();
 
@@ -18,16 +18,21 @@ function View() {
   this.rows = 0;
   this.xMargin = 0;
   this.yMargin = 0;
+  this.startColor = "732AE8";
 
   this.canvas = null;
   this.ctx = null;
+  this.generationCounter = null;
+  this.populationCounter = null;
+  this.colorInput = null;
 
   this.model = null;
 
-  this.setModel = function(model){
+  this.setModel = function (model) {
     this.model = model;
   }
 
+  /* create date from timestamp */
   this.getDate = function (time) {
     let date = new Date(time);
     let dd = date.getDate();
@@ -43,7 +48,8 @@ function View() {
     return dd + '/' + mm + '/' + yyyy + " - " + hh + ":" + mi;
   }
 
-  this.createGame = function() {
+  /* create the user interface */
+  this.createGame = function () {
     this.gameWidth = window.innerWidth - 40;
     this.gameWidth -= this.gameWidth % this.fieldSize;
 
@@ -58,27 +64,34 @@ function View() {
 
     document.getElementsByTagName("body")[0].innerHTML =
       "<div id='controls'>" +
-        "<button>Run</button>" +
-        "<button>Next</button>" +
-        "<button>Pause</button>" +
-        "<button>Reset</button>" +
-        "<button>Reset &amp clear history</button>" +
-        "<select id='select-pattern'>" +
-          "<option disabled selected hidden>Choose pattern...</option>" +
-          "<option value='00000001/000001011/00000101/000001/0001/0101'>Pattern 1</option>" +
-          "<option>zwei</option>" +
-          "<option>hihi</option>" +
-        "</select>" +
+      "<button>Run</button>" +
+      "<button>Next</button>" +
+      "<button>Pause</button>" +
+      "<button>Reset</button>" +
+      "<button>Reset &amp clear history</button>" +
+      "<select id='select-pattern'>" +
+      "<option disabled selected hidden>Choose pattern...</option>" +
+      "<option value='0000000000000000000000001/0000000000000000000000101/000000000000110000001100000000000011/" +
+                     "000000000001000100001100000000000011/1100000000100000100011/1100000000100010110000101/" +
+                     "0000000000100000100000001/0000000000010001/00000000000011'>Gosper Glider Gun</option>" +
+      "<option value='00000001/000001011/00000101/000001/0001/0101'>Block-laying switch engine</option>" +
+      "<option value='01001/1/10001/1111'>Lightweight spaceship</option>" +
+      "<option value='0001/010001/1/100001/111110'>Middleweight spaceship</option>" +
+      "<option value='00011/0100001/1/1000001/111111'>Heavyweight spaceship</option>" +
+      "<option value='01001/1/10001/1111/0/0/0/0001/010001/1/100001/111110/0/0/0/00011/0100001/1/1000001/111111'>Comparing spaceships</option>" +
+      "<option value='011/11/01'>F-Pentomino (1103 steps)</option>" +
+      "</select>" +
       "</div>" +
       "<div id='controls2'>" +
-        "<span>Grid size [2-50]:<span>" +
-        "<input type=number min='2' max='60' value='" + this.fieldSize + "' id='input-fieldSize'>" +
-        "<span class='text'>Generation: </span>" +
-        "<span id='generation-counter'>0</span>" +
-        "<span class='text'>Population: </span>" +
-        "<span id='population-counter'>0</span>" +
+      "<span>Grid size [2-50]:</span>" +
+      "<input type=number min='2' max='50' value='" + this.fieldSize + "' id='input-fieldSize'>" +
+      "<span id='color-input-text'>Color:</span><input id='color-input' class='jscolor' value=" +
+          (this.colorInput !== null ? ("'" + this.colorInput.value + "'>") : ("'" + this.startColor + "'>")) +
+      "<span class='text'>Generation: </span>" +
+      "<span id='generation-counter'>0</span>" +
+      "<span class='text'>Population: </span>" +
+      "<span id='population-counter'>0</span>" +
       "</div>" +
-
       "<canvas id='game-field-bg' width='" + this.gameWidth + "' height='" + this.gameHeight + "'></canvas>" +
       "<canvas id='game-field' width='" + this.gameWidth + "' height='" + this.gameHeight + "'></canvas>";
 
@@ -96,16 +109,19 @@ function View() {
     document.getElementById("controls").setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px;");
     document.getElementById("controls2").setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px;");
 
+    this.generationCounter = document.getElementById("generation-counter");
+    this.populationCounter = document.getElementById("population-counter");
+
     this.canvas = document.getElementById("game-field");
-    this.canvas.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + (this.yMargin+45) + "px;");
+    this.canvas.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + (this.yMargin + 45) + "px;");
 
     this.canvasBG = document.getElementById("game-field-bg");
-    this.canvasBG.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + (this.yMargin+45) + "px;");
+    this.canvasBG.setAttribute("style", "left:" + this.xMargin + "px; right: " + this.xMargin + "px; top:" + (this.yMargin + 45) + "px;");
 
     this.ctx = this.canvas.getContext("2d");
     this.ctxBG = this.canvasBG.getContext("2d");
 
-    this.ctxBG.strokeStyle="#888";
+    this.ctxBG.strokeStyle = "#888";
 
     for (let i = 0; i < this.columns; i++) {
       this.ctxBG.moveTo(i * this.fieldSize + 0.5, 0);
@@ -118,10 +134,14 @@ function View() {
       this.ctxBG.lineTo(this.gameWidth, i * this.fieldSize + 0.5);
       this.ctxBG.stroke();
     }
+
+    this.colorInput = document.getElementById("color-input");
+    jsc.init(); // call init function of _jscolor.js
   }
 
-  this.repaint = function() {
-    this.ctx.fillStyle = "#E80C47";
+  /* paint the current model to the field */
+  this.repaint = function () {
+    this.ctx.fillStyle = "#" + this.colorInput.value;
     let active = 0;
 
     for (let x = 0; x < this.columns; x++) {
@@ -138,12 +158,13 @@ function View() {
     this.updateCounter(active);
   }
 
-  this.updateCounter = function(active) {
-    document.getElementById("generation-counter").innerHTML = this.model.generation;
-    document.getElementById("population-counter").innerHTML = active;
+  this.updateCounter = function (active) {
+    this.generationCounter.innerHTML = this.model.generation;
+    this.populationCounter.innerHTML = active;
   }
 
-  this.addPatternToHistory = function() {
+  /* update selectbox with new pattern that was saved */
+  this.addPatternToHistory = function () {
     let saveCtr = localStorage.getItem("saveCtr");
     if (saveCtr) {
       let val = localStorage.getItem("save" + saveCtr);
